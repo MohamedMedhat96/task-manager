@@ -46,7 +46,11 @@ router.patch('/tasks/:id', async (req, res) => {
     if (!isValidUpdate)
         return res.status(400).send("The fields you sent are not updatable" + "" + fields)
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
+        const task = await Task.findById(req.params.id)
+        fields.forEach((field) => {
+            task[field] = req.body[field]
+        })
+        await task.save()
         if (!task)
             return res.status(404).send("Task not found")
         res.send(task)

@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../models/user')
+const { findById } = require('../models/user')
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
@@ -48,11 +49,13 @@ router.patch('/users/:id', async (req, res) => {
     const allowedUpdates = ["name", "email", "password", "age"]
     const isValidUpdate = updates.every((update) => allowedUpdates.includes(update))
     if (!isValidUpdate)
-        res.status(400).send("The fields you entered are not updateable")
+        return res.status(400).send("The fields you entered are not updateable")
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const user = await User.findById(req.params.id)
+        updates.forEach((update) => user[update] = req.body[update])
+        await user.save()
         if (!user)
-            res.status(404).send("User not found")
+            return res.status(404).send("User not found")
         res.send(user)
     } catch (err) {
         res.status(400).send(err)
