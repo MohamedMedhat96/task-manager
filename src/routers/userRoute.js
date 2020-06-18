@@ -2,6 +2,49 @@ const express = require('express')
 const router = express.Router()
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const multer = require('multer')
+const sharp = require('sharp')
+
+const image = multer({
+    limits: {
+        fileSize: 1000000
+    }, fileFilter(req, file, cb) {
+        //cb(undefined, true)
+        if (!file.originalname.match("\.(png|jpg|jpeg)"))
+            return cb(new Error("File not supported, file should be an Image file"))
+        cb(undefined, true)
+    }
+})
+
+router.post('/users/me/avatar', auth, image.single('avatar'), async (req, res) => {
+    const buffer = await sharp(req.file.buffer).png().resize({ width: 250, height: 250 }).toBuffer()
+    req.user.avatar = buffer
+    await req.user.save()
+    res.send()
+}, (error, req, res, next) => {
+    res.status(400).send({ error: error.message })
+})
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined
+    await req.user.save()
+    res.send()
+})
+
+router.get('/users/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user || !user.avatar) {
+            throw new Error("The user or the avatar are not found")
+        }
+
+        res.set('Content-Type', 'image/png')
+        res.send(user.avatar)
+    } catch (e) {
+        res.status(400).send(e)
+    }
+})
+
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
