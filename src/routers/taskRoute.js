@@ -2,7 +2,7 @@ const express = require('express')
 const router = new express.Router()
 const Task = require('../models/task')
 const auth = require('../middleware/auth')
-router.post('/tasks', auth, async (req, res) => {
+router.post('', auth, async (req, res) => {
     //const task = new Task(req.body)
     const task = new Task({
         ...req.body,
@@ -17,7 +17,7 @@ router.post('/tasks', auth, async (req, res) => {
     }
 })
 
-router.get('/tasks', auth, async (req, res) => {
+router.get('', auth, async (req, res) => {
     const match = {}
     match.owner = req.user._id
     var sort = {}
@@ -40,7 +40,7 @@ router.get('/tasks', auth, async (req, res) => {
     }
 })
 
-router.get('/tasks/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     const _id = req.params.id
     try {
         const task = await Task.findOne({ _id, owner: req.user._id })
@@ -52,7 +52,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-router.patch('/tasks/:id', auth, async (req, res) => {
+router.patch('/:id', auth, async (req, res) => {
     const fields = Object.keys(req.body)
     const updateAbleFields = ["description", "completed"]
     const erroFields = []
@@ -78,7 +78,7 @@ router.patch('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-router.delete('/tasks/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id })
         if (!task)
