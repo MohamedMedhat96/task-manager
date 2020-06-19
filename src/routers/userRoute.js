@@ -69,7 +69,7 @@ router.delete('/users/me', auth, async (req, res) => {
         sendDeleteEmail(req.user.email, req.user.name)
         return res.send(req.user)
     } catch (err) {
-        return res.send(500).send(err)
+        return res.status(500).send(err)
     }
 })
 router.patch('/users/me', auth, async (req, res) => {
